@@ -1,0 +1,166 @@
+:root {
+  --bg-color: #ffffff;
+  --text-color: #111111;
+  --border-size: 3rem;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body,
+html {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Hide body scroll, force internal scroll container */
+}
+
+.scroll-container {
+  height: 100vh;
+  /* Fix lateral scroll */
+  width: 100vw;
+  overflow-x: hidden;
+  /* Original setup */
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbars for a cleaner, art gallery look */
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+.scroll-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.section {
+  height: 100vh;
+  width: 100vw;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--border-size);
+}
+
+.hero {
+  text-align: center;
+  animation: fadeIn 1.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h1 {
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-weight: 300;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: #666;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+  padding-bottom: 2px;
+}
+
+a:hover {
+  color: #000;
+  border-color: #000;
+}
+
+.image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* For the radial gradient positioning */
+}
+
+.artwork-frame {
+  background: #ffffff;
+  padding: var(--border-size);
+  /* Simulate a canvas/matting thickness and soft overhead light shadow */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 40px 50px -10px rgba(0, 0, 0, 0.25),
+    0 80px 100px -20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  /* Ensures the box doesn't push out of the viewport on small screens */
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  /* Very subtle texture over the white frame */
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.02' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Dynamic Glow element using the CSS variable */
+.ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  /* Fallback if no color */
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0) 0%,
+    transparent 60%
+  );
+}
+
+.ambient-glow.active {
+  opacity: 0.15; /* Subtlety is key for a premium feel */
+}
+
+.photo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Ensures the image is "full frame" but fits entirely inside the white padding without cropping */
+  /* A subtle fade-in when the image loads adds to the premium feel */
+  animation: fadeInPhoto 1s ease-out;
+}
+
+@keyframes fadeInPhoto {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

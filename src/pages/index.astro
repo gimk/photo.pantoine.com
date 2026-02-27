@@ -1,17 +1,61 @@
 ---
-
+import { photos } from "../utils/gallery-data.ts";
+import "../styles/gallery.css";
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>photos.pantoine.com</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="scroll-container" id="scrollContainer">
+      <!-- Hero Title Screen -->
+      <section class="section hero">
+        <h1>photos.pantoine.com</h1>
+        <p>
+          All photos by <a
+            href="https://unsplash.com/@antoinepouligny"
+            target="_blank"
+            rel="noopener noreferrer">Antoine Pouligny</a
+          >, on <a
+            href="https://unsplash.com/"
+            target="_blank"
+            rel="noopener noreferrer">Unsplash</a
+          >
+        </p>
+      </section>
+
+      {
+        photos.map((src, i) => (
+          <section class="section">
+            <div class="image-container">
+              <div class="ambient-glow" />
+              <div class="artwork-frame">
+                <img
+                  src={src}
+                  alt={`Art photograph ${i + 1}`}
+                  class="photo"
+                  crossorigin="anonymous"
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+              </div>
+            </div>
+          </section>
+        ))
+      }
+    </main>
+
+    <script src="../scripts/gallery-interactions.ts"></script>
+  </body>
 </html>

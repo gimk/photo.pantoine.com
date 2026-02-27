@@ -6,3 +6,9 @@ export const unsplash = createApi({
   accessKey: import.meta.env.UNSPLASH_ACCESS_KEY,
   fetch: fetch,
 });
+
+// Override getRandom to always filter by the specific user's photos
+const originalGetRandom = unsplash.photos.getRandom;
+unsplash.photos.getRandom = ((params: any) => {
+  return originalGetRandom({ ...params, username: 'gimmick' });
+}) as typeof originalGetRandom;
