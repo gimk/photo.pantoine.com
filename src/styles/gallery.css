@@ -21,7 +21,7 @@ html {
 .scroll-container {
   height: 100vh;
   /* Fix lateral scroll */
-  width: 100vw;
+  width: 100%;
   overflow-x: hidden;
   /* Original setup */
   overflow-y: scroll;
@@ -40,7 +40,7 @@ html {
 
 .section {
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   scroll-snap-align: center;
   scroll-snap-stop: always;
   display: flex;
@@ -53,6 +53,11 @@ html {
 .hero {
   text-align: center;
   animation: fadeIn 1.5s ease-out;
+  flex: 1; /* allow hero to fill container gracefully */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -66,12 +71,44 @@ html {
   }
 }
 
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  
+  /* Override the parent's `align-items: center` which was fighting the width logic */
+  align-self: stretch;
+  width: auto;
+  
+  /* Symmetrically break out of the 3rem padding on BOTH sides */
+  margin-left: calc(-1 * var(--border-size)); 
+  margin-right: calc(-1 * var(--border-size)); 
+  margin-bottom: 1rem;
+}
+
+.marquee-content {
+  display: flex;
+  white-space: nowrap;
+  padding-right: 0;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%); 
+  }
+}
+
 h1 {
+  animation: scrollText 120s linear infinite;
   font-family: "Syne", sans-serif;
   font-weight: 800;
-  font-size: clamp(3rem, 7vw, 6rem); /* Larger font size as requested */
+  font-size: clamp(4rem, 15vw, 12rem); /* Significantly larger font size as requested "size of the animation the size of the window" */
   letter-spacing: -0.02em;
-  margin-bottom: 1rem;
+  line-height: 1; /* Keep it tight vertically */
+  margin: 0;
+  padding-right: 0;
 }
 
 p {
