@@ -26,7 +26,7 @@ html {
 }
 
 .scroll-container {
-  height: 100vh;
+  height: 100dvh;
   /* Fix lateral scroll */
   width: 100%;
   overflow-x: hidden;
@@ -46,7 +46,7 @@ html {
 }
 
 .section {
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   scroll-snap-align: center;
   scroll-snap-stop: always;

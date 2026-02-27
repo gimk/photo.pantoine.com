@@ -154,12 +154,16 @@
                   const nextIndex = index + i;
                   if (nextIndex < sections.length) {
                     const nextImg = images[nextIndex] as HTMLImageElement;
-                    if (nextImg && !nextImg.complete && nextImg.loading === "lazy") {
-                      // Force the browser to start loading it now
+                    if (nextImg && !nextImg.complete && nextImg.getAttribute("data-preloaded") !== "true") {
+                      nextImg.setAttribute("data-preloaded", "true");
                       nextImg.loading = "eager";
-                      // Note: We don't need to manually call extractAndApply on the nextImg
-                      // because the foreach loop below already attached the "load" listener to ALL images.
-                      // Simply changing loading="eager" will trigger that listener sooner.
+                      nextImg.removeAttribute("loading"); // Force eager loading on Safari
+                      
+                      // Explicitly fetch the image into browser cache using a detached Image object
+                      const preloader = new Image();
+                      // Propagate crossOrigin so the cache matches the DOM image
+                      preloader.crossOrigin = nextImg.crossOrigin;
+                      preloader.src = nextImg.src;
                     }
                   }
                 }
