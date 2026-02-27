@@ -112,7 +112,7 @@
                   if (targetColor) {
                     const softColor = targetColor.replace('rgb', 'rgba').replace(')', ', 0.4)');
                     const softColorCenter = targetColor.replace('rgb', 'rgba').replace(')', ', 0.8)');
-                    scrollGlowEl.style.background = `radial-gradient(ellipse at bottom, ${softColorCenter} 0%, ${softColor} 40%, transparent 70%)`;
+                    scrollGlowEl.style.background = `radial-gradient(ellipse at bottom, ${softColorCenter} 0%, ${softColor} 25%, transparent 45%)`;
                     scrollGlowEl.style.opacity = '1';
                   }
                 }, 3000); // 3 second delay
