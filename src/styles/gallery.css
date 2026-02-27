@@ -178,11 +178,11 @@ a:hover {
 /* Dynamic Glow element using the CSS variable */
 .ambient-glow {
   position: absolute;
-  top: 50%;
+  top: 40%; /* Shift slightly up so the glow is more visible at the top */
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 150%;
-  height: 150%;
+  width: 250%; /* increase width dramatically so it shows up behind the frame */
+  height: 250%; /* increase height dramatically */
   z-index: 1;
   pointer-events: none;
   opacity: 0;
@@ -196,7 +196,7 @@ a:hover {
 }
 
 .ambient-glow.active {
-  opacity: 0.15; /* Subtlety is key for a premium feel */
+  opacity: 0.6; /* Increased opacity to make it much more visible */
 }
 
 .photo {
