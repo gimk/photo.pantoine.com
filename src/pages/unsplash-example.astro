@@ -1,0 +1,72 @@
+---
+import { unsplash } from "../utils/unsplash";
+
+// Fetch a random photo
+const photoResponse = await unsplash.photos.getRandom({ count: 1 });
+
+let photoUrl = "";
+let photoAlt = "";
+let authorName = "";
+
+if (photoResponse.type === "success") {
+  const photo = Array.isArray(photoResponse.response)
+    ? photoResponse.response[0]
+    : photoResponse.response;
+  photoUrl = photo.urls.regular;
+  photoAlt = photo.alt_description || "A random photo from Unsplash";
+  authorName = photo.user.name;
+} else {
+  console.error("Error fetching photo from Unsplash:", photoResponse.errors);
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Unsplash API Example</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #f4f4f4;
+      }
+      .photo-container {
+        max-width: 800px;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+      p {
+        margin-top: 1rem;
+        color: #555;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Random Unsplash Photo</h1>
+    <div class="photo-container">
+      {
+        photoUrl ? (
+          <>
+            <img src={photoUrl} alt={photoAlt} />
+            <p>Photo by {authorName} on Unsplash</p>
+          </>
+        ) : (
+          <p>Failed to fetch photo from Unsplash API. Check terminal logs.</p>
+        )
+      }
+    </div>
+  </body>
+</html>

@@ -9,6 +9,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.17.1"
+    "astro": "^5.17.1",
+    "node-fetch": "^3.3.2",
+    "unsplash-js": "^7.0.20"
   }
 }
