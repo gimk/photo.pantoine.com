@@ -67,8 +67,9 @@ html {
 }
 
 h1 {
-  font-weight: 400;
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 7vw, 6rem); /* Larger font size as requested */
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
 }
@@ -106,22 +107,28 @@ a:hover {
 .artwork-frame {
   background: #ffffff;
   padding: var(--border-size);
-  /* Simulate a canvas/matting thickness and soft overhead light shadow */
+  
+  /* Pure white inside, but we add an explicit physical border to hold the 3D effect on the OUTSIDE */
+  border: 4px solid #f8f8f8;
+  border-radius: 2px;
+  
+  /* Outer Drop Shadows (depth from wall) */
   box-shadow:
+    /* Top lip highlight */
+    inset 0 2px 0 0 rgba(255, 255, 255, 1),
+    /* Bottom lip shadow tricking the eye into seeing a physical lip on the frame */
+    inset 0 -2px 5px 0 rgba(0, 0, 0, 0.05),
+    /* Soft overhead downward shadows */
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 40px 50px -10px rgba(0, 0, 0, 0.25),
     0 80px 100px -20px rgba(0, 0, 0, 0.15);
   z-index: 10;
-  /* Ensures the box doesn't push out of the viewport on small screens */
   max-width: 90vw;
   max-height: 90vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  /* Very subtle texture over the white frame */
-  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.02' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Dynamic Glow element using the CSS variable */
