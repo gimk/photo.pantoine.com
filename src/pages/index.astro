@@ -53,14 +53,29 @@ import "../styles/gallery.css";
         photos.map((src, i) => (
           <section class="section">
             <div class="image-container">
-              <div class="artwork-frame">
-                <img
-                  src={src}
-                  alt={`Art photograph ${i + 1}`}
-                  class="photo"
-                  crossorigin="anonymous"
-                  loading={i === 0 ? "eager" : "lazy"}
-                />
+              <div class="artwork-wrapper">
+                <div class="artwork-frame">
+                  <img
+                    src={src}
+                    alt={`Art photograph ${i + 1}`}
+                    class="photo"
+                    crossorigin="anonymous"
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                </div>
+
+                <div class="artwork-info-board">
+                  <p class="artwork-description">
+                    A sentence long description of the image content.
+                  </p>
+                  <p class="artwork-meta">
+                    October 24, 2023 &mdash; Chamonix, France
+                  </p>
+                  <p class="artwork-exif">
+                    SONY ILCE-7M3 &bull; 35mm &bull; f/8 &bull; 1/250s &bull;
+                    ISO 100
+                  </p>
+                </div>
               </div>
             </div>
           </section>
