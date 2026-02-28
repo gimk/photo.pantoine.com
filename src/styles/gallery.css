@@ -81,14 +81,14 @@ html {
 .marquee-container {
   overflow: hidden;
   white-space: nowrap;
-  
+
   /* Override the parent's `align-items: center` which was fighting the width logic */
   align-self: stretch;
   width: auto;
-  
+
   /* Symmetrically break out of the 3rem padding on BOTH sides */
-  margin-left: calc(-1 * var(--border-size)); 
-  margin-right: calc(-1 * var(--border-size)); 
+  margin-left: calc(-1 * var(--border-size));
+  margin-right: calc(-1 * var(--border-size));
   margin-bottom: 1rem;
 }
 
@@ -103,7 +103,7 @@ html {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%); 
+    transform: translateX(-100%);
   }
 }
 
@@ -111,7 +111,11 @@ h1 {
   animation: scrollText 120s linear infinite;
   font-family: "Syne", sans-serif;
   font-weight: 800;
-  font-size: clamp(4rem, 15vw, 12rem); /* Significantly larger font size as requested "size of the animation the size of the window" */
+  font-size: clamp(
+    4rem,
+    15vw,
+    12rem
+  ); /* Significantly larger font size as requested "size of the animation the size of the window" */
   letter-spacing: -0.02em;
   line-height: 1; /* Keep it tight vertically */
   margin: 0;
@@ -145,74 +149,57 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative; /* For the radial gradient positioning */
 }
+
 
 .artwork-frame {
   background: #ffffff;
   padding: var(--border-size);
-  
+
   /* Pure white inside, but we add an explicit physical border to hold the 3D effect on the OUTSIDE */
   border: 2px solid #f8f8f8; /* thinner border on mobile */
   border-radius: 2px;
-  
+
   /* Outer Drop Shadows (depth from wall) */
   box-shadow:
     /* Top lip highlight */
     inset 0 2px 0 0 rgba(255, 255, 255, 1),
     /* Bottom lip shadow tricking the eye into seeing a physical lip on the frame */
     inset 0 -2px 5px 0 rgba(0, 0, 0, 0.05),
-    /* Soft overhead downward shadows */
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    /* Soft overhead downward shadows */ 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 40px 50px -10px rgba(0, 0, 0, 0.25),
     0 80px 100px -20px rgba(0, 0, 0, 0.15);
   z-index: 10;
-  max-width: 90vw;
-  max-height: 90vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  z-index: 10;
+  position: relative;
+  display: inline-block; /* strictly shrink wrap around the photo */
 }
 
 @media (min-width: 768px) {
   .artwork-frame {
-    max-width: 75vw;
-    max-height: 75vh;
+    max-width: 85vw;
+    max-height: 90vh;
     border: 4px solid #f8f8f8; /* restore border on desktop */
   }
 }
 
-/* Dynamic Glow element using the CSS variable */
-.ambient-glow {
-  position: absolute;
-  top: 40%; /* Shift slightly up so the glow is more visible at the top */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 250%; /* increase width dramatically so it shows up behind the frame */
-  height: 250%; /* increase height dramatically */
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  /* Fallback if no color */
-  background: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0) 0%,
-    transparent 60%
-  );
-}
-
-.ambient-glow.active {
-  opacity: 0.6; /* Increased opacity to make it much more visible */
-}
 
 .photo {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain; /* Ensures the image is "full frame" but fits entirely inside the white padding without cropping */
+  max-width: calc(90vw - (var(--border-size) * 2));
+  max-height: calc(90vh - (var(--border-size) * 2));
+  width: auto;
+  height: auto;
+  display: block; /* Removes baseline spacing */
   /* A subtle fade-in when the image loads adds to the premium feel */
   animation: fadeInPhoto 1s ease-out;
+}
+
+@media (min-width: 768px) {
+  .photo {
+    max-width: calc(85vw - (var(--border-size) * 2));
+    max-height: calc(90vh - (var(--border-size) * 2));
+  }
 }
 
 @keyframes fadeInPhoto {
@@ -234,7 +221,11 @@ a:hover {
   pointer-events: none;
   z-index: 5;
   opacity: 0;
-  background: radial-gradient(ellipse at bottom, transparent 0%, transparent 100%);
+  background: radial-gradient(
+    ellipse at bottom,
+    transparent 0%,
+    transparent 100%
+  );
   /* Slow transition so it fades in gently when opacity changes to 1 */
   transition: opacity 2s ease;
   transform-origin: bottom center;
@@ -242,12 +233,13 @@ a:hover {
 }
 
 @keyframes breatheGlow {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale3d(1, 1, 1);
     filter: brightness(1) drop-shadow(0 0 0px transparent);
   }
   50% {
     transform: scale3d(1.15, 1.4, 1);
-    filter: brightness(1.6) drop-shadow(0 -10px 20px rgba(255,255,255,0.2));
+    filter: brightness(1.6) drop-shadow(0 -10px 20px rgba(255, 255, 255, 0.2));
   }
 }

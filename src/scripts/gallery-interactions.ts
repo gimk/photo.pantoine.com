@@ -169,16 +169,6 @@
                 }
               }
 
-              const bgContainer = img.closest(".image-container");
-              if (bgContainer) {
-                const glowEl = bgContainer.querySelector(".ambient-glow") as HTMLElement;
-                if (glowEl) {
-                  const softColor = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
-                  const softColorCenter = color.replace('rgb', 'rgba').replace(')', ', 0.8)');
-                  glowEl.style.background = `radial-gradient(circle at center, ${softColorCenter} 0%, ${softColor} 25%, transparent 60%)`;
-                  glowEl.classList.add("active");
-                }
-              }
             }
           };
 
