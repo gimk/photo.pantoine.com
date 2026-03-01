@@ -107,7 +107,7 @@ body {
   /* Symmetrically break out of the 3rem padding on BOTH sides */
   margin-left: calc(-1 * var(--border-size));
   margin-right: calc(-1 * var(--border-size));
-  margin-bottom: 1rem;
+  margin-bottom: 3rem;
 }
 
 .marquee-content {
@@ -138,6 +138,76 @@ h1 {
   line-height: 1; /* Keep it tight vertically */
   margin: 0;
   padding-right: 0;
+}
+
+/* Portfolio Pill (from gimk.github.io) */
+.portfolio-pill-container {
+  display: flex;
+  margin-bottom: 2rem;
+  justify-content: center;
+  animation: fadeIn 1.5s ease-out;
+  z-index: 50;
+  position: relative;
+}
+
+.portfolio-pill {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent) !important;
+  border-radius: 9999px;
+  background-color: transparent;
+  color: var(--text-color) !important;
+  font-family: "Inter", sans-serif;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.portfolio-pill:hover {
+  background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
+  border-color: color-mix(in srgb, var(--text-color) 20%, transparent) !important;
+}
+
+.portfolio-pill-text {
+  font-weight: 400;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.portfolio-pill-arrow {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2;
+  fill: none;
+  stroke: currentColor;
+  transition: color 0.3s;
+  z-index: 10;
+}
+
+.portfolio-pill-arrow line {
+  transform: translateX(0.75rem) scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.portfolio-pill-arrow polyline {
+  transform: translateX(-0.25rem);
+  transition: transform 0.3s ease-in-out;
+}
+
+.portfolio-pill:hover .portfolio-pill-arrow line {
+  transform: translateX(0) scaleX(1);
+}
+
+.portfolio-pill:hover .portfolio-pill-arrow polyline {
+  transform: translateX(0);
 }
 
 p {
