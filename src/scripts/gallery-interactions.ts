@@ -78,7 +78,7 @@ function processImageColors() {
     if (targetIndex < sections.length) {
       const targetColor = sectionColors[targetIndex];
       if (targetColor) {
-        document.body.style.backgroundColor = hexToRgba(targetColor, 0.15);
+        document.body.style.backgroundColor = hexToRgba(targetColor, 0.20);
       } else {
         document.body.style.backgroundColor = "var(--bg-color)";
       }
