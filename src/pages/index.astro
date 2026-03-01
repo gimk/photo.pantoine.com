@@ -1,13 +1,67 @@
 ---
-import { photos } from "../utils/gallery-data.ts";
 import "../styles/gallery.css";
+
+// Fetch from Unsplash at build time
+const accessKey = import.meta.env.UNSPLASH_ACCESS_KEY;
+if (!accessKey) {
+  throw new Error("UNSPLASH_ACCESS_KEY is required in .env");
+}
+
+const COLLECTION_ID = "0kF7vQfhbTA";
+
+// Fetch up to 30 photos from the collection (Unsplash default per_page is 10, max is 30 for standard calls, up to 100 possible but 30 is safer)
+const res = await fetch(
+  `https://api.unsplash.com/collections/${COLLECTION_ID}/photos?per_page=30&client_id=${accessKey}`,
+);
+
+if (!res.ok) {
+  throw new Error(`Failed to fetch Unsplash collection: ${res.statusText}`);
+}
+
+const collectionPhotos = await res.json();
+
+// The /collections endpoint returns 'simplified' photo objects missing full EXIF and location.
+// We must make a secondary request for each ID to get the full metadata.
+const photos = await Promise.all(
+  collectionPhotos.map(async (simplifiedPhoto: any) => {
+    try {
+      const detailRes = await fetch(
+        `https://api.unsplash.com/photos/${simplifiedPhoto.id}?client_id=${accessKey}`,
+      );
+      if (detailRes.ok) {
+        return await detailRes.json();
+      }
+    } catch (e) {
+      console.warn(`Failed to fetch full details for ${simplifiedPhoto.id}`);
+    }
+    // Fallback to simplified photo if detail fetch fails (e.g., rate limit)
+    return simplifiedPhoto;
+  }),
+);
+
+// Format date helper
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// Format resolution helper
+const formatResolution = (width: number, height: number) => {
+  if (!width || !height) return "";
+  const megapixels = ((width * height) / 1000000).toFixed(1);
+  return `${width}x${height}px (${megapixels}MP)`;
+};
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>photos.pantoine.com</title>
@@ -38,11 +92,11 @@ import "../styles/gallery.css";
         </div>
         <p>
           All photos by <a
-            href="https://unsplash.com/@antoinepouligny"
+            href="https://unsplash.com/@antoinepouligny?utm_source=Pantoine_Photos&utm_medium=referral"
             target="_blank"
             rel="noopener noreferrer">Antoine Pouligny</a
           >, on <a
-            href="https://unsplash.com/"
+            href="https://unsplash.com/?utm_source=Pantoine_Photos&utm_medium=referral"
             target="_blank"
             rel="noopener noreferrer">Unsplash</a
           >
@@ -50,32 +104,55 @@ import "../styles/gallery.css";
       </section>
 
       {
-        photos.map((src, i) => (
+        photos.map((photo, i) => (
           <section class="section">
             <div class="image-container">
               <div class="artwork-wrapper">
                 <div class="artwork-frame">
                   <img
-                    src={src}
-                    alt={`Art photograph ${i + 1}`}
+                    src={photo.urls.full}
+                    alt={photo.alt_description || `Art photograph ${i + 1}`}
                     class="photo"
                     crossorigin="anonymous"
                     loading={i === 0 ? "eager" : "lazy"}
+                    data-download-url={photo.links?.download_location}
                   />
                 </div>
 
-                <div class="artwork-info-board">
+                <a
+                  href={`${photo.links.html}?utm_source=Pantoine_Photos&utm_medium=referral`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="artwork-info-board"
+                >
                   <p class="artwork-description">
-                    A sentence long description of the image content.
+                    {photo.description ||
+                      photo.alt_description ||
+                      "A beautiful moment captured."}
                   </p>
                   <p class="artwork-meta">
-                    October 24, 2023 &mdash; Chamonix, France
+                    {formatDate(photo.created_at)}
+                    {photo.location?.name && ` \u2014 ${photo.location.name}`}
                   </p>
                   <p class="artwork-exif">
-                    SONY ILCE-7M3 &bull; 35mm &bull; f/8 &bull; 1/250s &bull;
-                    ISO 100
+                    {[
+                      photo.exif?.make && photo.exif?.model
+                        ? `${photo.exif.make} ${photo.exif.model}`
+                        : null,
+                      photo.exif?.focal_length
+                        ? `${photo.exif.focal_length}mm`
+                        : null,
+                      photo.exif?.aperture ? `f/${photo.exif.aperture}` : null,
+                      photo.exif?.exposure_time
+                        ? `${photo.exif.exposure_time}s`
+                        : null,
+                      photo.exif?.iso ? `ISO ${photo.exif.iso}` : null,
+                      formatResolution(photo.width, photo.height),
+                    ]
+                      .filter(Boolean)
+                      .join(" \u2022 ")}
                   </p>
-                </div>
+                </a>
               </div>
             </div>
           </section>
