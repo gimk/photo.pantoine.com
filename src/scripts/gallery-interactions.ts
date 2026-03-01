@@ -1,3 +1,27 @@
+// 0. Scroll Indicator Logic
+const setupScrollIndicator = () => {
+  const indicator = document.getElementById("scrollIndicator");
+  if (indicator) {
+    indicator.addEventListener("click", () => {
+      const container = document.getElementById("scrollContainer");
+      if (container) {
+        container.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+      }
+    });
+  }
+
+  const backToTop = document.getElementById("backToTop");
+  if (backToTop) {
+    backToTop.addEventListener("click", () => {
+      const container = document.getElementById("scrollContainer");
+      if (container) {
+        container.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  }
+};
+document.addEventListener("DOMContentLoaded", setupScrollIndicator);
+
 // 1. Keyboard Navigation Logic
 document.addEventListener("keydown", (e) => {
   const container = document.getElementById("scrollContainer");
@@ -23,50 +47,12 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 2. Average Color Extraction Logic
-function getAverageColor(imgElement: HTMLImageElement) {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-
-  // Scale down for performance
-  const width = (canvas.width = 100);
-  const height = (canvas.height = 100);
-
-  context.drawImage(imgElement, 0, 0, width, height);
-
-  let data;
-  try {
-    data = context.getImageData(0, 0, width, height).data;
-  } catch (e) {
-    // If cross-origin fails, silently abort
-    console.error("Could not extract image data (CORS):", e);
-    return null;
-  }
-
-  let r = 0,
-    g = 0,
-    b = 0;
-  const length = data.length;
-  let count = 0;
-
-  for (let i = 0; i < length; i += 4) {
-    // Skip highly transparent pixels
-    if (data[i + 3] < 128) continue;
-    r += data[i];
-    g += data[i + 1];
-    b += data[i + 2];
-    count++;
-  }
-
-  if (count === 0) return null;
-
-  // Calculate average and round
-  r = Math.round(r / count);
-  g = Math.round(g / count);
-  b = Math.round(b / count);
-
-  return `rgb(${r}, ${g}, ${b})`;
+// 2. Background Color Logic
+function hexToRgba(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function processImageColors() {
@@ -75,14 +61,10 @@ function processImageColors() {
     null,
   );
 
-  const scrollGlowEl = document.getElementById("scrollGlow");
   const scrollContainer = document.getElementById("scrollContainer");
 
-  let scrollTimeout: number | null = null;
-  let isResting = false;
-
-  const updateScrollGlow = () => {
-    if (!scrollGlowEl || !scrollContainer) return;
+  const updateBackgroundColor = () => {
+    if (!scrollContainer) return;
 
     const scrollTop = scrollContainer.scrollTop;
     const height = window.innerHeight;
@@ -90,52 +72,25 @@ function processImageColors() {
     const currentIndex = Math.floor(progress);
     const fraction = progress - currentIndex;
 
-    let targetIndex = currentIndex + 1;
+    let targetIndex = currentIndex;
+    if (fraction > 0.5) targetIndex = currentIndex + 1;
 
-    // Clear any existing resting timeout because the user is moving
-    if (scrollTimeout) {
-      window.clearTimeout(scrollTimeout);
-    }
-    isResting = false;
-
-    // If we are basically snapped to a section (fraction is very small)
-    if (fraction < 0.05 || fraction > 0.95) {
-      // Adjust currentIndex if we are at the very top edge of the next section
-      const actualCurrentIndex =
-        fraction > 0.95 ? currentIndex + 1 : currentIndex;
-      targetIndex = actualCurrentIndex;
-
-      // Hide glow immediately while scrolling/snapping
-      scrollGlowEl.style.opacity = "0";
-
-      if (targetIndex < sections.length) {
-        // Set a timer to show the glow after 3 seconds of resting
-        scrollTimeout = window.setTimeout(() => {
-          const targetColor = sectionColors[targetIndex];
-          if (targetColor) {
-            const softColor = targetColor
-              .replace("rgb", "rgba")
-              .replace(")", ", 0.4)");
-            const softColorCenter = targetColor
-              .replace("rgb", "rgba")
-              .replace(")", ", 0.8)");
-            scrollGlowEl.style.background = `radial-gradient(ellipse at bottom, ${softColorCenter} 0%, ${softColor} 25%, transparent 45%)`;
-            scrollGlowEl.style.opacity = "1";
-          }
-        }, 3000); // 3 second delay
+    if (targetIndex < sections.length) {
+      const targetColor = sectionColors[targetIndex];
+      if (targetColor) {
+        document.body.style.backgroundColor = hexToRgba(targetColor, 0.15);
+      } else {
+        document.body.style.backgroundColor = "var(--bg-color)";
       }
-    } else {
-      // We are actively scrolling between sections
-      scrollGlowEl.style.opacity = "0";
     }
   };
 
   if (scrollContainer) {
     scrollContainer.addEventListener("scroll", () => {
-      requestAnimationFrame(updateScrollGlow);
+      requestAnimationFrame(updateBackgroundColor);
     });
     window.addEventListener("resize", () => {
-      requestAnimationFrame(updateScrollGlow);
+      requestAnimationFrame(updateBackgroundColor);
     });
   }
 
@@ -146,17 +101,16 @@ function processImageColors() {
     const section = img.closest(".section");
     const index = Array.from(sections).indexOf(section as Element);
 
-    // Wrap in closure to capture image
     const extractAndApply = () => {
-      const color = getAverageColor(img);
+      const color = img.getAttribute("data-color");
       if (color) {
-        // Store the color for the scroll glow
+        // Store the color for the background
         if (index !== -1) {
           sectionColors[index] = color;
-          // Force an update immediately so the initial glow shows up
-          requestAnimationFrame(updateScrollGlow);
+          // Force an update immediately so the initial background shows up
+          requestAnimationFrame(updateBackgroundColor);
 
-          // Preload up to 3 upcoming images to prevent layout shift / blank glow
+          // Preload up to 3 upcoming images to prevent layout shift / blank spaces
           for (let i = 1; i <= 3; i++) {
             const nextIndex = index + i;
             if (nextIndex < sections.length) {
