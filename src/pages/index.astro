@@ -1,5 +1,7 @@
 ---
 import "../styles/gallery.css";
+import PhotoCard from "../components/PhotoCard.astro";
+import type { UnsplashPhoto } from "../components/PhotoCard.astro";
 
 // Fetch from Unsplash at build time
 const accessKey = import.meta.env.UNSPLASH_ACCESS_KEY;
@@ -22,7 +24,7 @@ const collectionPhotos = await res.json();
 
 // The /collections endpoint returns 'simplified' photo objects missing full EXIF and location.
 // We must make a secondary request for each ID to get the full metadata.
-const photos = await Promise.all(
+const photos: UnsplashPhoto[] = await Promise.all(
   collectionPhotos.map(async (simplifiedPhoto: any) => {
     try {
       const detailRes = await fetch(
@@ -38,24 +40,6 @@ const photos = await Promise.all(
     return simplifiedPhoto;
   }),
 );
-
-// Format date helper
-const formatDate = (dateString: string) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
-// Format resolution helper
-const formatResolution = (width: number, height: number) => {
-  if (!width || !height) return "";
-  const megapixels = ((width * height) / 1000000).toFixed(1);
-  return `${width}x${height}px (${megapixels}MP)`;
-};
 ---
 
 <html lang="en">
@@ -65,6 +49,24 @@ const formatResolution = (width: number, height: number) => {
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>photos.pantoine.com</title>
+    <meta
+      name="description"
+      content="A curated gallery of photographs by Antoine Pouligny, presented in a minimalist digital art exhibition format."
+    />
+    <meta
+      property="og:title"
+      content="photos.pantoine.com - Antoine Pouligny"
+    />
+    <meta
+      property="og:description"
+      content="A curated gallery of photographs by Antoine Pouligny, presented in a minimalist digital art exhibition format."
+    />
+    {
+      photos.length > 0 && (
+        <meta property="og:image" content={photos[0].urls.full} />
+      )
+    }
+    <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -99,7 +101,7 @@ const formatResolution = (width: number, height: number) => {
           >
         </p>
 
-        <div
+        <button
           class="scroll-indicator"
           id="scrollIndicator"
           aria-label="Scroll down"
@@ -116,62 +118,13 @@ const formatResolution = (width: number, height: number) => {
           >
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
-        </div>
+        </button>
       </section>
 
       {
         photos.map((photo, i) => (
           <section class="section">
-            <div class="image-container">
-              <div class="artwork-wrapper">
-                <div class="artwork-frame">
-                  <img
-                    src={photo.urls.full}
-                    alt={photo.alt_description || `Art photograph ${i + 1}`}
-                    class="photo"
-                    crossorigin="anonymous"
-                    loading={i === 0 ? "eager" : "lazy"}
-                    data-download-url={photo.links?.download_location}
-                    data-color={photo.color}
-                  />
-                </div>
-
-                <a
-                  href={`${photo.links.html}?utm_source=Pantoine_Photos&utm_medium=referral`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="artwork-info-board"
-                >
-                  <p class="artwork-description">
-                    {photo.description ||
-                      photo.alt_description ||
-                      "A beautiful moment captured."}
-                  </p>
-                  <p class="artwork-meta">
-                    {formatDate(photo.created_at)}
-                    {photo.location?.name && ` \u2014 ${photo.location.name}`}
-                  </p>
-                  <p class="artwork-exif">
-                    {[
-                      photo.exif?.make && photo.exif?.model
-                        ? `${photo.exif.make} ${photo.exif.model}`
-                        : null,
-                      photo.exif?.focal_length
-                        ? `${photo.exif.focal_length}mm`
-                        : null,
-                      photo.exif?.aperture ? `f/${photo.exif.aperture}` : null,
-                      photo.exif?.exposure_time
-                        ? `${photo.exif.exposure_time}s`
-                        : null,
-                      photo.exif?.iso ? `ISO ${photo.exif.iso}` : null,
-                      formatResolution(photo.width, photo.height),
-                    ]
-                      .filter(Boolean)
-                      .join(" \u2022 ")}
-                  </p>
-                </a>
-              </div>
-            </div>
+            <PhotoCard photo={photo} index={i} totalPhotos={photos.length} />
           </section>
         ))
       }
@@ -192,7 +145,7 @@ const formatResolution = (width: number, height: number) => {
           >.
         </p>
 
-        <div class="back-to-top" id="backToTop" aria-label="Back to top">
+        <button class="back-to-top" id="backToTop" aria-label="Back to top">
           <svg
             width="32"
             height="32"
@@ -206,7 +159,7 @@ const formatResolution = (width: number, height: number) => {
             <polyline points="18 15 12 9 6 15"></polyline>
           </svg>
           <span>TOP</span>
-        </div>
+        </button>
       </section>
     </main>
 
