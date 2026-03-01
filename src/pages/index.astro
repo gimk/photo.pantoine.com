@@ -40,6 +40,11 @@ const photos: UnsplashPhoto[] = await Promise.all(
     return simplifiedPhoto;
   }),
 );
+
+// Sort photos by date (newest first)
+photos.sort(
+  (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+);
 ---
 
 <html lang="en">
@@ -91,7 +96,7 @@ const photos: UnsplashPhoto[] = await Promise.all(
         </div>
         <p>
           All photos by <a
-            href="https://unsplash.com/@antoinepouligny?utm_source=Pantoine_Photos&utm_medium=referral"
+            href="https://unsplash.com/@gimmick?utm_source=Pantoine_Photos&utm_medium=referral"
             target="_blank"
             rel="noopener noreferrer">Antoine Pouligny</a
           >, on <a
@@ -139,7 +144,7 @@ const photos: UnsplashPhoto[] = await Promise.all(
         </p>
         <p class="small-subtitle">
           If you haven't had enough, go have a look at my <a
-            href="https://unsplash.com/@antoinepouligny?utm_source=Pantoine_Photos&utm_medium=referral"
+            href="https://unsplash.com/@gimmick?utm_source=Pantoine_Photos&utm_medium=referral"
             target="_blank"
             rel="noopener noreferrer">Unsplash profile</a
           >.
