@@ -188,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   processImageColors();
   randomizeInfoBoard();
   initDownloadTracker();
+  initInfoBoardReveal();
 });
 
 // 4. Unsplash Download Tracker
@@ -231,5 +232,40 @@ function initDownloadTracker() {
 
   document.querySelectorAll("img[data-download-url]").forEach((img) => {
     observer.observe(img);
+  });
+}
+
+// 5. Delayed Info Board Reveal
+function initInfoBoardReveal() {
+  const wrappers = document.querySelectorAll(".artwork-wrapper");
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const wrapper = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          if (!wrapper.classList.contains("show-info")) {
+            const timerId = window.setTimeout(() => {
+              wrapper.classList.add("show-info");
+            }, 5000);
+            wrapper.dataset.revealTimer = timerId.toString();
+          }
+        } else {
+          const timerId = wrapper.dataset.revealTimer;
+          if (timerId) {
+            window.clearTimeout(parseInt(timerId));
+            delete wrapper.dataset.revealTimer;
+          }
+        }
+      });
+    },
+    {
+      root: document.getElementById("scrollContainer"),
+      threshold: 0.5,
+    }
+  );
+
+  wrappers.forEach((wrapper) => {
+    observer.observe(wrapper);
   });
 }

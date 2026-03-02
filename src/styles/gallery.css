@@ -323,9 +323,11 @@ a:hover {
   width: 100%;
   z-index: 50; /* Ensure this is above the frame (z-index 10) and scroll glow (z-index 5) */
   position: relative; /* Required for z-index to work */
-  pointer-events: auto; /* Ensure it explicitly captures clicks */
+  pointer-events: none; /* Hide clicks while faded out */
+  opacity: 0;
   text-align: left;
   transition:
+    opacity 2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
   cursor: pointer;
@@ -338,6 +340,11 @@ a:hover {
   border: none;
   border-radius: 0;
   align-self: flex-start;
+}
+
+.artwork-wrapper.show-info .artwork-info-board {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .artwork-info-board:hover {
