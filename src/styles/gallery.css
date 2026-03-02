@@ -319,42 +319,57 @@ a:hover {
 .artwork-info-board {
   display: block; /* Requires display block since it's now an inline <a> tag */
   text-decoration: none; /* Remove underline */
-  background-color: #fcfcfb; /* Slightly off-white mimicking a paper card */
   color: #333;
-  padding: 1rem 1.25rem;
   width: 100%;
-  max-width: 280px;
-  box-shadow:
-    -2px 4px 10px rgba(0, 0, 0, 0.05),
-    0 1px 3px rgba(0, 0, 0, 0.02);
   z-index: 50; /* Ensure this is above the frame (z-index 10) and scroll glow (z-index 5) */
   position: relative; /* Required for z-index to work */
   pointer-events: auto; /* Ensure it explicitly captures clicks */
   text-align: left;
-  border: 1px solid #f0f0f0;
-  border-radius: 1px; /* Just a tiny corner rounding */
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
   cursor: pointer;
+
+  /* Mobile specific: no background, no shadow, aligned left */
+  background-color: transparent;
+  padding: 0;
+  max-width: 220px;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  align-self: flex-start;
 }
 
 .artwork-info-board:hover {
   transform: translateY(-2px);
-  box-shadow:
-    -2px 6px 15px rgba(0, 0, 0, 0.08),
-    0 2px 5px rgba(0, 0, 0, 0.04);
-  border-color: #e0e0e0;
 }
 
 @media (min-width: 768px) {
   .artwork-info-board {
+    /* Restore desktop card styling */
+    background-color: #fcfcfb;
+    padding: 1rem 1.25rem;
+    max-width: 280px;
+    box-shadow:
+      -2px 4px 10px rgba(0, 0, 0, 0.05),
+      0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid #f0f0f0;
+    border-radius: 1px;
+    align-self: auto;
+    
     position: absolute;
     right: 100%;
     bottom: 2rem;
     margin-right: 1.5rem; /* Gap to artwork */
     width: 200px;
     max-width: none;
+  }
+
+  .artwork-info-board:hover {
+    box-shadow:
+      -2px 6px 15px rgba(0, 0, 0, 0.08),
+      0 2px 5px rgba(0, 0, 0, 0.04);
+    border-color: #e0e0e0;
   }
 
   .artwork-wrapper.right-side .artwork-info-board {
@@ -375,13 +390,20 @@ a:hover {
 
 .artwork-counter {
   position: absolute;
-  top: 1rem;
-  left: 1.25rem;
+  top: 0;
+  left: 0;
   font-size: 0.55rem;
   font-weight: 300;
   color: #999;
   font-family: "JetBrains Mono", monospace;
   line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .artwork-counter {
+    top: 1rem;
+    left: 1.25rem;
+  }
 }
 
 /* Adjust description margin to account for absolute counter */
