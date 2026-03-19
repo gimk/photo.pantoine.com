@@ -2,6 +2,7 @@
 import "../styles/gallery.css";
 import PhotoCard from "../components/PhotoCard.astro";
 import type { UnsplashPhoto } from "../components/PhotoCard.astro";
+import Vibrant from "node-vibrant";
 
 // Fetch from Unsplash at build time
 const accessKey = import.meta.env.UNSPLASH_ACCESS_KEY;
@@ -26,20 +27,52 @@ const collectionPhotos = await res.json();
 // We must make a secondary request for each ID to get the full metadata.
 const photos: UnsplashPhoto[] = await Promise.all(
   collectionPhotos.map(async (simplifiedPhoto: any) => {
+    let finalPhoto = simplifiedPhoto;
     try {
       const detailRes = await fetch(
         `https://api.unsplash.com/photos/${simplifiedPhoto.id}?client_id=${accessKey}`,
       );
       if (detailRes.ok) {
-        return await detailRes.json();
+        finalPhoto = await detailRes.json();
       }
     } catch (e) {
       console.warn(`Failed to fetch full details for ${simplifiedPhoto.id}`);
     }
-    // Fallback to simplified photo if detail fetch fails (e.g., rate limit)
-    return simplifiedPhoto;
+
+    // Impactful Color Extraction:
+    // We use the 'small' URL (400px) instead of 'thumb' (200px) for much better color accuracy.
+    try {
+      const imageRes = await fetch(finalPhoto.urls.small);
+      if (!imageRes.ok) throw new Error(`Failed to fetch small image: ${imageRes.statusText}`);
+      const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+
+      const palette = await Vibrant.from(imageBuffer).getPalette();
+
+      // Better logic for "impactful": prioritize Vibrant, then DarkVibrant, then Muted.
+      // LightVibrant is often too close to white/background, so we put it lower.
+      const extractedColor =
+        palette.Vibrant?.getHex() ||
+        palette.DarkVibrant?.getHex() ||
+        palette.Muted?.getHex() ||
+        palette.LightVibrant?.getHex() ||
+        palette.DarkMuted?.getHex() ||
+        finalPhoto.color;
+
+      console.log(`[Color Extraction] Photo ${finalPhoto.id}: ${extractedColor} (vibrant: ${!!palette.Vibrant})`);
+      finalPhoto.color = extractedColor;
+    } catch (e) {
+      console.warn(
+        `Failed to extract vibrant color for ${finalPhoto.id}: ${e instanceof Error ? e.message : 'Unknown error'}. Falling back to default: ${finalPhoto.color}`,
+      );
+    }
+
+    return finalPhoto;
   }),
 );
+
+// Apply first photo color to hero section if it exists
+const firstPhotoColor = photos.length > 0 ? photos[0].color : null;
+
 
 // Sort photos by date (newest first)
 photos.sort(
@@ -79,7 +112,7 @@ photos.sort(
   <body>
     <main class="scroll-container" id="scrollContainer">
       <!-- Hero Title Screen -->
-      <section class="section hero">
+      <section class="section hero" data-color={firstPhotoColor}>
         <div class="portfolio-pill-container">
           <a
             href="https://www.pantoine.com/"

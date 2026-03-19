@@ -11,8 +11,9 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "@fontsource/syne": "^5.2.7",
-    "astro": "^5.17.1",
+    "astro": "^6.0.6",
     "node-fetch": "^3.3.2",
+    "node-vibrant": "^3.1.6",
     "unsplash-js": "^7.0.20"
   }
 }
