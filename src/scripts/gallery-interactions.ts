@@ -97,13 +97,10 @@ function processImageColors() {
 
   const images = document.querySelectorAll("img.photo");
 
-  // First pass: Read all available data-color attributes immediately
-  images.forEach((el) => {
-    const img = el as HTMLImageElement;
-    const section = img.closest(".section");
-    const index = Array.from(sections).indexOf(section as Element);
-    const color = img.getAttribute("data-color");
-    if (color && index !== -1) {
+  // First pass: Read all available data-color attributes immediately from sections
+  sections.forEach((section, index) => {
+    const color = (section as HTMLElement).getAttribute("data-color");
+    if (color) {
       sectionColors[index] = color;
     }
   });

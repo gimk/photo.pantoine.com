@@ -3,6 +3,8 @@ import "../styles/gallery.css";
 import PhotoCard from "../components/PhotoCard.astro";
 import type { UnsplashPhoto } from "../components/PhotoCard.astro";
 import Vibrant from "node-vibrant";
+import fs from "node:fs";
+import path from "node:path";
 
 // Fetch from Unsplash at build time
 const accessKey = import.meta.env.UNSPLASH_ACCESS_KEY;
@@ -11,73 +13,126 @@ if (!accessKey) {
 }
 
 const COLLECTION_ID = "0kF7vQfhbTA";
+const CACHE_PATH = path.join(process.cwd(), "src/data/photos-cache.json");
 
-// Fetch up to 30 photos from the collection (Unsplash default per_page is 10, max is 30 for standard calls, up to 100 possible but 30 is safer)
-const res = await fetch(
-  `https://api.unsplash.com/collections/${COLLECTION_ID}/photos?per_page=30&client_id=${accessKey}`,
-);
+let photos: UnsplashPhoto[] = [];
+let usedCache = false;
 
-if (!res.ok) {
-  throw new Error(`Failed to fetch Unsplash collection: ${res.statusText}`);
+// Try to load from cache in development
+if (import.meta.env.DEV && fs.existsSync(CACHE_PATH)) {
+  try {
+    const cacheData = fs.readFileSync(CACHE_PATH, "utf-8");
+    photos = JSON.parse(cacheData);
+    usedCache = true;
+    console.log("[Unsplash] Using local cache to save API credits.");
+  } catch (e) {
+    console.warn("[Unsplash] Failed to read cache, falling back to API.");
+  }
 }
 
-const collectionPhotos = await res.json();
+if (!usedCache) {
+  console.log("[Unsplash] Fetching fresh data from API...");
+  // Fetch up to 30 photos from the collection
+  const res = await fetch(
+    `https://api.unsplash.com/collections/${COLLECTION_ID}/photos?per_page=30&client_id=${accessKey}`,
+  );
 
-// The /collections endpoint returns 'simplified' photo objects missing full EXIF and location.
-// We must make a secondary request for each ID to get the full metadata.
-const photos: UnsplashPhoto[] = await Promise.all(
-  collectionPhotos.map(async (simplifiedPhoto: any) => {
-    let finalPhoto = simplifiedPhoto;
-    try {
-      const detailRes = await fetch(
-        `https://api.unsplash.com/photos/${simplifiedPhoto.id}?client_id=${accessKey}`,
-      );
-      if (detailRes.ok) {
-        finalPhoto = await detailRes.json();
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Unsplash collection: ${res.statusText}`);
+  }
+
+  const collectionPhotos = await res.json();
+
+  // The /collections endpoint returns 'simplified' photo objects missing full EXIF and location.
+  // We must make a secondary request for each ID to get the full metadata.
+  photos = await Promise.all(
+    collectionPhotos.map(async (simplifiedPhoto: any) => {
+      let finalPhoto = simplifiedPhoto;
+      try {
+        const detailRes = await fetch(
+          `https://api.unsplash.com/photos/${simplifiedPhoto.id}?client_id=${accessKey}`,
+        );
+        if (detailRes.ok) {
+          finalPhoto = await detailRes.json();
+        }
+      } catch (e) {
+        console.warn(`Failed to fetch full details for ${simplifiedPhoto.id}`);
       }
-    } catch (e) {
-      console.warn(`Failed to fetch full details for ${simplifiedPhoto.id}`);
+
+      // Impactful Color Extraction:
+      try {
+        const imageRes = await fetch(finalPhoto.urls.small);
+        if (!imageRes.ok) throw new Error(`Failed to fetch small image: ${imageRes.statusText}`);
+        const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+
+        const palette = await Vibrant.from(imageBuffer).getPalette();
+
+        const extractedColor =
+          palette.Vibrant?.getHex() ||
+          palette.DarkVibrant?.getHex() ||
+          palette.Muted?.getHex() ||
+          palette.LightVibrant?.getHex() ||
+          palette.DarkMuted?.getHex() ||
+          finalPhoto.color;
+
+        finalPhoto.color = extractedColor;
+      } catch (e) {
+        console.warn(
+          `Failed to extract vibrant color for ${finalPhoto.id}: ${e instanceof Error ? e.message : 'Unknown error'}. Falling back to default: ${finalPhoto.color}`,
+        );
+      }
+
+      // Clean up the object to only keep what's needed for the UI
+      return {
+        id: finalPhoto.id,
+        created_at: finalPhoto.created_at,
+        description: finalPhoto.description,
+        alt_description: finalPhoto.alt_description,
+        color: finalPhoto.color,
+        urls: {
+          full: finalPhoto.urls.full,
+          small: finalPhoto.urls.small // helpful for future logic
+        },
+        links: {
+          html: finalPhoto.links.html,
+          download_location: finalPhoto.links.download_location,
+        },
+        width: finalPhoto.width,
+        height: finalPhoto.height,
+        location: {
+          name: finalPhoto.location?.name || null,
+        },
+        exif: {
+          make: finalPhoto.exif?.make || null,
+          model: finalPhoto.exif?.model || null,
+          focal_length: finalPhoto.exif?.focal_length || null,
+          aperture: finalPhoto.exif?.aperture || null,
+          exposure_time: finalPhoto.exif?.exposure_time || null,
+          iso: finalPhoto.exif?.iso || null,
+        },
+      } as UnsplashPhoto;
+    }),
+  );
+
+  // Sort photos by date (newest first) before caching
+  photos.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+
+  // Save to cache for future development runs
+  try {
+    if (!fs.existsSync(path.dirname(CACHE_PATH))) {
+      fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
     }
-
-    // Impactful Color Extraction:
-    // We use the 'small' URL (400px) instead of 'thumb' (200px) for much better color accuracy.
-    try {
-      const imageRes = await fetch(finalPhoto.urls.small);
-      if (!imageRes.ok) throw new Error(`Failed to fetch small image: ${imageRes.statusText}`);
-      const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
-
-      const palette = await Vibrant.from(imageBuffer).getPalette();
-
-      // Better logic for "impactful": prioritize Vibrant, then DarkVibrant, then Muted.
-      // LightVibrant is often too close to white/background, so we put it lower.
-      const extractedColor =
-        palette.Vibrant?.getHex() ||
-        palette.DarkVibrant?.getHex() ||
-        palette.Muted?.getHex() ||
-        palette.LightVibrant?.getHex() ||
-        palette.DarkMuted?.getHex() ||
-        finalPhoto.color;
-
-      console.log(`[Color Extraction] Photo ${finalPhoto.id}: ${extractedColor} (vibrant: ${!!palette.Vibrant})`);
-      finalPhoto.color = extractedColor;
-    } catch (e) {
-      console.warn(
-        `Failed to extract vibrant color for ${finalPhoto.id}: ${e instanceof Error ? e.message : 'Unknown error'}. Falling back to default: ${finalPhoto.color}`,
-      );
-    }
-
-    return finalPhoto;
-  }),
-);
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(photos, null, 2));
+    console.log("[Unsplash] Cache updated successfully.");
+  } catch (e) {
+    console.warn("[Unsplash] Failed to write cache:", e);
+  }
+}
 
 // Apply first photo color to hero section if it exists
 const firstPhotoColor = photos.length > 0 ? photos[0].color : null;
-
-
-// Sort photos by date (newest first)
-photos.sort(
-  (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-);
 ---
 
 <html lang="en">
@@ -112,7 +167,7 @@ photos.sort(
   <body>
     <main class="scroll-container" id="scrollContainer">
       <!-- Hero Title Screen -->
-      <section class="section hero" data-color={firstPhotoColor}>
+      <section class="section hero" data-color="#ffffff">
         <div class="portfolio-pill-container">
           <a
             href="https://www.pantoine.com/"
@@ -185,9 +240,23 @@ photos.sort(
         </button>
       </section>
 
+      <!-- Philosophy Section -->
+      <section class="section philosophy" data-color="#ffffff">
+        <div class="philosophy-content">
+          <p>
+            This website is a digital exhibition of my photography.
+          </p>
+          <p>
+            Scroll down or use the keyboard to go to each picture.<br />
+            Stay a few seconds before you can see the info board appearing,<br />
+            take time to look at the details.
+          </p>
+        </div>
+      </section>
+
       {
         photos.map((photo, i) => (
-          <section class="section">
+          <section class="section" data-color={photo.color}>
             <PhotoCard photo={photo} index={i} totalPhotos={photos.length} />
           </section>
         ))
