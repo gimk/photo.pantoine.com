@@ -436,24 +436,86 @@ a:hover {
   text-align: center;
 }
 
-.philosophy-content {
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  padding: 3rem;
+.philosophy-card {
+  max-width: 480px;
+  width: 100%;
   border: 1px solid #111;
   background: white;
+  padding: 2.5rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.02),
+    0 60px 120px rgba(0,0,0,0.04),
+    0 120px 200px rgba(0,0,0,0.06);
 }
 
-.philosophy-content p {
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-ref {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  color: #888;
+  letter-spacing: 0.1em;
+}
+
+.philosophy-card h2 {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.card-body p {
   font-family: "Inter", sans-serif;
   font-weight: 300;
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-size: 0.95rem;
   line-height: 1.6;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.5rem;
+}
+
+.instruction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.instruction-row .label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6rem;
+  color: #999;
+  letter-spacing: 0.05em;
+}
+
+.instruction-row .value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
   color: #111;
-  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* Scroll Indicator */

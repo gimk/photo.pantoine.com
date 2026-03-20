@@ -62,7 +62,10 @@ if (!usedCache) {
       // Impactful Color Extraction:
       try {
         const imageRes = await fetch(finalPhoto.urls.small);
-        if (!imageRes.ok) throw new Error(`Failed to fetch small image: ${imageRes.statusText}`);
+        if (!imageRes.ok)
+          throw new Error(
+            `Failed to fetch small image: ${imageRes.statusText}`,
+          );
         const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
 
         const palette = await Vibrant.from(imageBuffer).getPalette();
@@ -78,7 +81,7 @@ if (!usedCache) {
         finalPhoto.color = extractedColor;
       } catch (e) {
         console.warn(
-          `Failed to extract vibrant color for ${finalPhoto.id}: ${e instanceof Error ? e.message : 'Unknown error'}. Falling back to default: ${finalPhoto.color}`,
+          `Failed to extract vibrant color for ${finalPhoto.id}: ${e instanceof Error ? e.message : "Unknown error"}. Falling back to default: ${finalPhoto.color}`,
         );
       }
 
@@ -91,7 +94,7 @@ if (!usedCache) {
         color: finalPhoto.color,
         urls: {
           full: finalPhoto.urls.full,
-          small: finalPhoto.urls.small // helpful for future logic
+          small: finalPhoto.urls.small, // helpful for future logic
         },
         links: {
           html: finalPhoto.links.html,
@@ -116,7 +119,8 @@ if (!usedCache) {
 
   // Sort photos by date (newest first) before caching
   photos.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   // Save to cache for future development runs
@@ -242,15 +246,30 @@ const firstPhotoColor = photos.length > 0 ? photos[0].color : null;
 
       <!-- Philosophy Section -->
       <section class="section philosophy" data-color="#ffffff">
-        <div class="philosophy-content">
-          <p>
-            This website is a digital exhibition of my photography.
-          </p>
-          <p>
-            Scroll down or use the keyboard to go to each picture.<br />
-            Stay a few seconds before you can see the info board appearing,<br />
-            take time to look at the details.
-          </p>
+        <div class="philosophy-card">
+          <div class="card-header">
+            <span class="card-ref">INFO-01</span>
+            <h2>DISCLAIMER</h2>
+          </div>
+
+          <div class="card-body">
+            <p>This website is a curated space for my photography.</p>
+            <p>
+              A digital exhibition designed for the patient observer. Please
+              take your time.
+            </p>
+          </div>
+
+          <div class="card-footer">
+            <div class="instruction-row">
+              <span class="label">NAVIGATE</span>
+              <span class="value">SCROLL // KEYS</span>
+            </div>
+            <div class="instruction-row">
+              <span class="label">OBSERVE</span>
+              <span class="value">LOOK 5 SEC TO UNLOCK INFO</span>
+            </div>
+          </div>
         </div>
       </section>
 
