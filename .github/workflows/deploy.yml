@@ -2,8 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch: # This enables the manual button
+    branches: ["master"]
+  schedule:
+    - cron: "0 0 * * *" # Runs every day at midnight UTC
 
 # Allow this job to clone the repo and create a page deployment
 permissions:
